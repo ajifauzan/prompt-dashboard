@@ -1,0 +1,25 @@
+services:
+  claude-cache-dashboard:
+    build: .
+    container_name: claude-cache-dashboard
+    ports:
+      - "8080:8080"
+    volumes:
+      # Claude Code's session logs, mounted READ-ONLY.
+      # Windows (Docker Desktop):
+      - "${USERPROFILE:-${HOME}}/.claude/projects:/logs:ro"
+      #
+      # If ${USERPROFILE} doesn't expand for you on Windows, hardcode it:
+      #   - "C:/Users/YOURNAME/.claude/projects:/logs:ro"
+      #
+      # History lives in a named volume so it survives rebuilds.
+      # Swap for "./data:/data" if you'd rather see the JSON on disk.
+      - claude-cache-history:/data
+    environment:
+      TZ: Asia/Jakarta        # so "today" rolls over at your midnight, not UTC
+      DAYS: "30"              # lookback window; 0 = all tracked history
+      REFRESH: "60"           # browser auto-refresh seconds; 0 to disable
+    restart: unless-stopped
+
+volumes:
+  claude-cache-history:
